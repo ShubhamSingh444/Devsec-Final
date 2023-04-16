@@ -238,6 +238,9 @@ def expense_month(request):
 
 
 def stats(request):
+    """
+    View function for generating statistics related to user expenses and income.
+    """
     if request.session.has_key('is_logged') :
         todays_date = datetime.date.today()
         one_month_ago = todays_date-datetime.timedelta(days=30)
@@ -266,6 +269,9 @@ def stats(request):
         return render(request,'home/stats.html',{'addmoney':addmoney_info})
 
 def expense_week(request):
+    """
+    Retrieve expenses within the last week for the logged-in user.
+    """
     todays_date = datetime.date.today()
     one_week_ago = todays_date-datetime.timedelta(days=7)
     user_id = request.session["user_id"]
@@ -279,6 +285,9 @@ def expense_week(request):
 
 
     def get_expense_category_amount(Category,add_money):
+        """
+        Calculates the total quantity for a given category in the 'add_money' list.
+        """
         quantity = 0 
         filtered_by_category = addmoney.filter(Category = Category,add_money="Expense") 
         for item in filtered_by_category:
@@ -292,6 +301,9 @@ def expense_week(request):
     return JsonResponse({'expense_category_data': finalrep}, safe=False)
     
 def weekly(request):
+    """
+    This view calculates and displays the weekly expenses and income for a logged-in user.
+    """
     if request.session.has_key('is_logged') :
         todays_date = datetime.date.today()
         one_week_ago = todays_date-datetime.timedelta(days=7)
@@ -320,12 +332,18 @@ def weekly(request):
     return render(request,'home/weekly.html',{'addmoney_info':addmoney_info})
 
 def check(request):
+    """
+    View function to check if email exists in the database and redirect
+    """
     if request.method == 'POST':
         user_exists = User.objects.filter(email=request.POST['email'])
         messages.error(request,"Email not registered, TRY AGAIN!!!")
         return redirect("/reset_password")
 
 def info_year(request):
+    """
+    Retrieve financial information for the current year
+    """
     todays_date = datetime.date.today()
     one_week_ago = todays_date-datetime.timedelta(days=30*12)
     user_id = request.session["user_id"]
@@ -339,6 +357,7 @@ def info_year(request):
 
 
     def get_expense_category_amount(Category,add_money):
+        """ Calculates the total quantity of expenses for a given category """
         quantity = 0 
         filtered_by_category = addmoney.filter(Category = Category,add_money="Expense") 
         for item in filtered_by_category:
@@ -353,4 +372,3 @@ def info_year(request):
 
 def info(request):
     return render(request,'home/info.html')
-     
