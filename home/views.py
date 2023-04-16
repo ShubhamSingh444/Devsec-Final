@@ -139,6 +139,9 @@ def handleSignup(request):
     return redirect('/login')
 
 def handlelogin(request):
+    """
+    Handles login requests.
+    """
     if request.method =='POST':
         # get the post parameters
         loginuname = request.POST["loginuname"]
@@ -155,15 +158,22 @@ def handlelogin(request):
             messages.error(request," Invalid Credentials, Please try again")  
             return redirect("/")  
     return HttpResponse('404-not found')
+
 def handleLogout(request):
+        """
+        Handles logout requests.
+        """
         del request.session['is_logged']
-        del request.session["user_id"] 
+        del request.session["user_id"]
         logout(request)
         messages.success(request, " Successfully logged out")
         return redirect('home')
 
 #add money form
 def addmoney_submission(request):
+    """
+    addmoney requests.
+    """
     if request.session.has_key('is_logged'):
         if request.method == "POST":
             user_id = request.session["user_id"]
@@ -183,7 +193,11 @@ def addmoney_submission(request):
                 }
             return render(request,'home/index.html',context)
     return redirect('/index')
+
 def addmoney_update(request,id):
+    """
+    Update Addmoney_info object with new values from request.POST.
+    """
     if request.session.has_key('is_logged'):
         if request.method == "POST":
             add  = Addmoney_info.objects.get(id=id)
@@ -193,22 +207,28 @@ def addmoney_update(request,id):
             add.Category = request.POST["Category"]
             add .save()
             return redirect("/index")
-    return redirect("/home")        
+    return redirect("/home") 
 
 def expense_edit(request,id):
+    """
+    Edit an expense in the system.
+    """
     if request.session.has_key('is_logged'):
         addmoney_info = Addmoney_info.objects.get(id=id)
         user_id = request.session["user_id"]
         user1 = User.objects.get(id=user_id)
         return render(request,'home/expense_edit.html',{'addmoney_info':addmoney_info})
-    return redirect("/home")  
+    return redirect("/home")
 
 def expense_delete(request,id):
+    """
+    deleting expense
+    """
     if request.session.has_key('is_logged'):
         addmoney_info = Addmoney_info.objects.get(id=id)
         addmoney_info.delete()
         return redirect("/index")
-    return redirect("/home")  
+    return redirect("/home")
 
 def expense_month(request):
     todays_date = datetime.date.today()
@@ -238,13 +258,16 @@ def expense_month(request):
 
 
 def stats(request):
+    """
+    View function for generating statistics related to user expenses and income.
+    """
     if request.session.has_key('is_logged') :
         todays_date = datetime.date.today()
         one_month_ago = todays_date-datetime.timedelta(days=30)
         user_id = request.session["user_id"]
         user1 = User.objects.get(id=user_id)
         addmoney_info = Addmoney_info.objects.filter(user = user1,Date__gte=one_month_ago,Date__lte=todays_date)
-        sum = 0 
+        sum = 0
         for i in addmoney_info:
             if i.add_money == 'Expense':
                 sum=sum+i.quantity
@@ -266,6 +289,9 @@ def stats(request):
         return render(request,'home/stats.html',{'addmoney':addmoney_info})
 
 def expense_week(request):
+    """
+    Retrieve expenses within the last week for the logged-in user.
+    """
     todays_date = datetime.date.today()
     one_week_ago = todays_date-datetime.timedelta(days=7)
     user_id = request.session["user_id"]
@@ -279,7 +305,10 @@ def expense_week(request):
 
 
     def get_expense_category_amount(Category,add_money):
-        quantity = 0 
+        """
+        Calculates the total quantity for a given category in the 'add_money' list.
+        """
+        quantity = 0
         filtered_by_category = addmoney.filter(Category = Category,add_money="Expense") 
         for item in filtered_by_category:
             quantity+=item.quantity
@@ -290,15 +319,18 @@ def expense_week(request):
             finalrep[y]= get_expense_category_amount(y,"Expense")
 
     return JsonResponse({'expense_category_data': finalrep}, safe=False)
-    
+   
 def weekly(request):
+    """
+    This view calculates and displays the weekly expenses and income for a logged-in user.
+    """
     if request.session.has_key('is_logged') :
         todays_date = datetime.date.today()
         one_week_ago = todays_date-datetime.timedelta(days=7)
         user_id = request.session["user_id"]
         user1 = User.objects.get(id=user_id)
         addmoney_info = Addmoney_info.objects.filter(user = user1,Date__gte=one_week_ago,Date__lte=todays_date)
-        sum = 0 
+        sum = 0
         for i in addmoney_info:
             if i.add_money == 'Expense':
                 sum=sum+i.quantity
@@ -320,12 +352,18 @@ def weekly(request):
     return render(request,'home/weekly.html',{'addmoney_info':addmoney_info})
 
 def check(request):
+    """
+    View function to check if email exists in the database and redirect
+    """
     if request.method == 'POST':
         user_exists = User.objects.filter(email=request.POST['email'])
         messages.error(request,"Email not registered, TRY AGAIN!!!")
         return redirect("/reset_password")
 
 def info_year(request):
+    """
+    Retrieve financial information for the current year
+    """
     todays_date = datetime.date.today()
     one_week_ago = todays_date-datetime.timedelta(days=30*12)
     user_id = request.session["user_id"]
@@ -339,8 +377,11 @@ def info_year(request):
 
 
     def get_expense_category_amount(Category,add_money):
-        quantity = 0 
-        filtered_by_category = addmoney.filter(Category = Category,add_money="Expense") 
+        """
+        Calculates total quantity of expenses for a given category.
+        """
+        quantity = 0
+        filtered_by_category = addmoney.filter(Category = Category,add_money="Expense")
         for item in filtered_by_category:
             quantity+=item.quantity
         return quantity
@@ -353,4 +394,3 @@ def info_year(request):
 
 def info(request):
     return render(request,'home/info.html')
-     
