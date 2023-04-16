@@ -32,8 +32,10 @@ phases:
       - pip install pylint
       - pip install pipenv
       - pip install bandit
-      - pylint --ignore=migrations,.ebextensions,__pycache__,static,staticfiles,templates,.gitignore,buidspec.yml,env,Pipfile,views.py,db.sqlite3 --generate-rcfile > .pylintrc
+      - pylint --ignore=migrations,.ebextensions,__pycache__,static,staticfiles,templates,.gitignore,buidspec.yml,env,Pipfile,views.py,db.sqlite3,1,requirements.txt --generate-rcfile > .pylintrc
       - sed -i 's/fail-under=10/fail-under=0/g'  .pylintrc
+      - sed -i 's/snake_case/any/g'  .pylintrc
+
 
   pre_build:
     commands:
@@ -41,7 +43,7 @@ phases:
 
   build:
     commands:
-      # - pylint -rn --rcfile=.pylintrc *
+      - pylint -rn --rcfile=.pylintrc *
       - bandit -iii -r . --exclude=buildspec.yml,db.sqlite3,./env,requirements.txt
       - bandit -iii -r . --exclude=buildspec.yml,db.sqlite3,./env,requirements.txt > bandit-output.txt
       - pipenv lock || true
