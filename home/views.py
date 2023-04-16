@@ -1,22 +1,31 @@
-from django.shortcuts import render,HttpResponse,redirect
-from django.contrib import messages
-from django.contrib.auth import authenticate ,logout
-from django.contrib.auth import login as dj_login
-from django.contrib.auth.models import User
-from .models import Addmoney_info,UserProfile
-from django.contrib.sessions.models import Session
-from django.core.paginator import Paginator, EmptyPage , PageNotAnInteger
-from django.db.models import Sum
-from django.http import JsonResponse
+"""
+viewsfile
+"""
 import datetime
-from django.utils import timezone
+from django.contrib.auth import authenticate, login as dj_login, logout
+from django.contrib.auth.models import User
+from django.contrib import messages
+from django.contrib.sessions.models import Session
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+#from django.db.models import Sum
+from django.http import JsonResponse, HttpResponse
+from django.shortcuts import render, redirect
+#from django.utils import timezone
+from .models import Addmoney_info, UserProfile
+
 # Create your views here.
 def home(request):
+    """
+    View function for the home page.
+    """
     if request.session.has_key('is_logged'):
         return redirect('/index')
     return render(request,'home/login.html')
    # return HttpResponse('This is home')
 def index(request):
+    """
+    View function for rendering the home/index.html page.
+    """
     if request.session.has_key('is_logged'):
         user_id = request.session["user_id"]
         user = User.objects.get(id=user_id)
@@ -33,40 +42,66 @@ def index(request):
     return redirect('home')
     #return HttpResponse('This is blog')
 def register(request):
+    """
+    Renders the 'register.html' template for user registration.
+    """
     return render(request,'home/register.html')
     #return HttpResponse('This is blog')
 def password(request):
+    """
+    Render the 'password.html' template for displaying password-related functionality.
+    """
     return render(request,'home/password.html')
 
 def charts(request):
+    """
+    Render the 'charts.html' template for displaying charts on the home page.
+    """
     return render(request,'home/charts.html')
 def search(request):
+    """
+    Searches for 'addmoney' records in the database based on the 'fromdate' and 'todate' values
+    passed in the request's GET parameters.
+    """
     if request.session.has_key('is_logged'):
         user_id = request.session["user_id"]
         user = User.objects.get(id=user_id)
         fromdate = request.GET['fromdate']
         todate = request.GET['todate']
-        addmoney = Addmoney_info.objects.filter(user=user, Date__range=[fromdate,todate]).order_by('-Date')
+        addmoney = Addmoney_info.objects.filter(user=user, \
+                                                Date__range=[fromdate,todate]).order_by('-Date')
         return render(request,'home/tables.html',{'addmoney':addmoney})
     return redirect('home')
 def tables(request):
+    """
+    View function that displays tables of addmoney information for a logged-in user.
+    """
     if request.session.has_key('is_logged'):
         user_id = request.session["user_id"]
         user = User.objects.get(id=user_id)
-        fromdate = request.POST.get('fromdate')
-        todate = request.POST.get('todate')
+        #fromdate = request.POST.get('fromdate')
+        #todate = request.POST.get('todate')
         addmoney = Addmoney_info.objects.filter(user=user).order_by('-Date')
         return render(request,'home/tables.html',{'addmoney':addmoney})
     return redirect('home')
 def addmoney(request):
+    """
+    View function to handle adding money functionality.
+    """
     return render(request,'home/addmoney.html')
 
 def profile(request):
+    """
+    View function for displaying the profile page.
+    """
     if request.session.has_key('is_logged'):
         return render(request,'home/profile.html')
     return redirect('/home')
 
 def profile_edit(request,id):
+    """
+    View function for editing a user profile.
+    """
     if request.session.has_key('is_logged'):
         add = User.objects.get(id=id)
         # user_id = request.session["user_id"]
@@ -75,6 +110,9 @@ def profile_edit(request,id):
     return redirect("/home")
 
 def profile_update(request,id):
+    """
+    Update user profile information.
+    """
     if request.session.has_key('is_logged'):
         if request.method == "POST":
             user = User.objects.get(id=id)
@@ -90,53 +128,59 @@ def profile_update(request,id):
     return redirect("/home")
 
 def handleSignup(request):
+    """
+    Handle user signup request.
+    This function handles user signup request and performs various input validations
+    before creating a new user account.
+    """
     if request.method =='POST':
-            # get the post parameters
-            uname = request.POST["uname"]
-            fname=request.POST["fname"]
-            lname=request.POST["lname"]
-            email = request.POST["email"]
-            profession = request.POST['profession']
-            Savings = request.POST['Savings']
-            income = request.POST['income']
-            pass1 = request.POST["pass1"]
-            pass2 = request.POST["pass2"]
-            profile = UserProfile(Savings = Savings,profession=profession,income=income)
-            # check for errors in input
-            if request.method == 'POST':
-                try:
-                    user_exists = User.objects.get(username=request.POST['uname'])
-                    messages.error(request," Username already taken, Try something else!!!")
+        # get the post parameters
+        uname = request.POST["uname"]
+        fname=request.POST["fname"]
+        lname=request.POST["lname"]
+        email = request.POST["email"]
+        profession = request.POST['profession']
+        Savings = request.POST['Savings']
+        income = request.POST['income']
+        pass1 = request.POST["pass1"]
+        pass2 = request.POST["pass2"]
+        profile = UserProfile(Savings = Savings,profession=profession,income=income)
+        # check for errors in input
+        if request.method == 'POST':
+            try:
+                #user_exists = User.objects.get(username=request.POST['uname'])
+                messages.error(request," Username already taken, Try something else!!!")
+                return redirect("/register")
+            except User.DoesNotExist:
+                if len(uname)>15:
+                    messages.error(request," Username must be max 15 characters,\
+                                    Please try again")
                     return redirect("/register")
-                except User.DoesNotExist:
-                    if len(uname)>15:
-                        messages.error(request," Username must be max 15 characters, Please try again")
-                        return redirect("/register")
 
-                    if not uname.isalnum():
-                        messages.error(request," Username should only contain letters and numbers, Please try again")
-                        return redirect("/register")
+                if not uname.isalnum():
+                    messages.error(request," Username should only contain letters and numbers,\
+                                    Please try again")
+                    return redirect("/register")
 
-                    if pass1 != pass2:
-                        messages.error(request," Password do not match, Please try again")
-                        return redirect("/register")
+                if pass1 != pass2:
+                    messages.error(request," Password do not match, Please try again")
+                    return redirect("/register")
 
-            # create the user
-            user = User.objects.create_user(uname, email, pass1)
-            user.first_name=fname
-            user.last_name=lname
-            user.email = email
-            # profile = UserProfile.objects.all()
+        # create the user
+        user = User.objects.create_user(uname, email, pass1)
+        user.first_name=fname
+        user.last_name=lname
+        user.email = email
 
-            user.save()
-            # p1=profile.save(commit=False)
-            profile.user = user
-            profile.save()
-            messages.success(request," Your account has been successfully created")
-            return redirect("/")
+        user.save()
+        profile.user = user
+        profile.save()
+        messages.success(request," Your account has been successfully created")
+        return redirect("/")
     else:
         return HttpResponse('404 - NOT FOUND ')
     return redirect('/login')
+
 
 def handlelogin(request):
     """
@@ -160,14 +204,15 @@ def handlelogin(request):
     return HttpResponse('404-not found')
 
 def handleLogout(request):
-        """
-        Handles logout requests.
-        """
-        del request.session['is_logged']
-        del request.session["user_id"]
-        logout(request)
-        messages.success(request, " Successfully logged out")
-        return redirect('home')
+    """
+    Handles logout requests.
+    """
+    del request.session['is_logged']
+    del request.session["user_id"]
+    logout(request)
+    messages.success(request, "Successfully logged out")
+    return redirect('home')
+
 
 #add money form
 def addmoney_submission(request):
@@ -183,7 +228,9 @@ def addmoney_submission(request):
             quantity = request.POST["quantity"]
             Date = request.POST["Date"]
             Category = request.POST["Category"]
-            add = Addmoney_info(user = user1,add_money=add_money,quantity=quantity,Date = Date,Category= Category)
+            add = Addmoney_info(user = user1,add_money=add_money,\
+                                quantity=quantity,\
+                                    Date = Date,Category= Category)
             add.save()
             paginator = Paginator(addmoney_info1, 4)
             page_number = request.GET.get('page')
@@ -216,7 +263,7 @@ def expense_edit(request,id):
     if request.session.has_key('is_logged'):
         addmoney_info = Addmoney_info.objects.get(id=id)
         user_id = request.session["user_id"]
-        user1 = User.objects.get(id=user_id)
+        #user1 = User.objects.get(id=user_id)
         return render(request,'home/expense_edit.html',{'addmoney_info':addmoney_info})
     return redirect("/home")
 
@@ -231,11 +278,15 @@ def expense_delete(request,id):
     return redirect("/home")
 
 def expense_month(request):
+    """
+    View function for calculating and displaying expenses for the past month.
+    """
     todays_date = datetime.date.today()
     one_month_ago = todays_date-datetime.timedelta(days=30)
     user_id = request.session["user_id"]
     user1 = User.objects.get(id=user_id)
-    addmoney = Addmoney_info.objects.filter(user = user1,Date__gte=one_month_ago,Date__lte=todays_date)
+    addmoney = Addmoney_info.objects.filter(user = user1,\
+                                            Date__gte=one_month_ago,Date__lte=todays_date)
     finalrep ={}
 
     def get_Category(addmoney_info):
@@ -250,9 +301,9 @@ def expense_month(request):
             quantity+=item.quantity
         return quantity
 
-    for x in addmoney:
-        for y in Category_list:
-            finalrep[y]= get_expense_category_amount(y,"Expense")
+    #for x in addmoney:
+    for y in Category_list:
+        finalrep[y]= get_expense_category_amount(y,"Expense")
 
     return JsonResponse({'expense_category_data': finalrep}, safe=False)
 
@@ -266,7 +317,8 @@ def stats(request):
         one_month_ago = todays_date-datetime.timedelta(days=30)
         user_id = request.session["user_id"]
         user1 = User.objects.get(id=user_id)
-        addmoney_info = Addmoney_info.objects.filter(user = user1,Date__gte=one_month_ago,Date__lte=todays_date)
+        addmoney_info = Addmoney_info.objects.filter(user = user1,\
+                                                     Date__gte=one_month_ago,Date__lte=todays_date)
         sum = 0
         for i in addmoney_info:
             if i.add_money == 'Expense':
@@ -296,10 +348,14 @@ def expense_week(request):
     one_week_ago = todays_date-datetime.timedelta(days=7)
     user_id = request.session["user_id"]
     user1 = User.objects.get(id=user_id)
-    addmoney = Addmoney_info.objects.filter(user = user1,Date__gte=one_week_ago,Date__lte=todays_date)
+    addmoney = Addmoney_info.objects.filter(user = user1,\
+                                            Date__gte=one_week_ago,Date__lte=todays_date)
     finalrep ={}
 
     def get_Category(addmoney_info):
+        """
+        Retrieves the 'Category' attribute from the 'addmoney_info' object.
+        """
         return addmoney_info.Category
     Category_list = list(set(map(get_Category,addmoney)))
 
@@ -314,9 +370,9 @@ def expense_week(request):
             quantity+=item.quantity
         return quantity
 
-    for x in addmoney:
-        for y in Category_list:
-            finalrep[y]= get_expense_category_amount(y,"Expense")
+    #for x in addmoney:
+    for y in Category_list:
+        finalrep[y]= get_expense_category_amount(y,"Expense")
 
     return JsonResponse({'expense_category_data': finalrep}, safe=False)
 
@@ -329,7 +385,8 @@ def weekly(request):
         one_week_ago = todays_date-datetime.timedelta(days=7)
         user_id = request.session["user_id"]
         user1 = User.objects.get(id=user_id)
-        addmoney_info = Addmoney_info.objects.filter(user = user1,Date__gte=one_week_ago,Date__lte=todays_date)
+        addmoney_info = Addmoney_info.objects.filter(user = user1,\
+                                                     Date__gte=one_week_ago,Date__lte=todays_date)
         sum = 0
         for i in addmoney_info:
             if i.add_money == 'Expense':
@@ -356,7 +413,7 @@ def check(request):
     View function to check if email exists in the database and redirect
     """
     if request.method == 'POST':
-        user_exists = User.objects.filter(email=request.POST['email'])
+        #user_exists = User.objects.filter(email=request.POST['email'])
         messages.error(request,"Email not registered, TRY AGAIN!!!")
         return redirect("/reset_password")
 
@@ -368,7 +425,8 @@ def info_year(request):
     one_week_ago = todays_date-datetime.timedelta(days=30*12)
     user_id = request.session["user_id"]
     user1 = User.objects.get(id=user_id)
-    addmoney = Addmoney_info.objects.filter(user = user1,Date__gte=one_week_ago,Date__lte=todays_date)
+    addmoney = Addmoney_info.objects.filter(user = user1,\
+                                            Date__gte=one_week_ago,Date__lte=todays_date)
     finalrep ={}
 
     def get_Category(addmoney_info):

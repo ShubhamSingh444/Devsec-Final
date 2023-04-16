@@ -1,4 +1,7 @@
-from django.test import TestCase
+"""
+we can write testcase here
+"""
+#from django.test import TestCase
 
 
 

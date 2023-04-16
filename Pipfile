@@ -1,3 +1,6 @@
+"""
+Pipfile configuration file for managing project dependencies.
+"""
 [[source]]
 url = "https://pypi.org/simple"
 verify_ssl = true
@@ -6,6 +9,9 @@ name = "pypi"
 [packages]
 
 [dev-packages]
+"""
+Development packages are used for dependencies that are only required during development.
+"""
 
 [requires]
 python_version = "3.10"

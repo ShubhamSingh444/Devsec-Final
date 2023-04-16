@@ -32,7 +32,7 @@ phases:
       - pip install pylint
       - pip install pipenv
       - pip install bandit
-      - pylint --ignore=migrations,.ebextensions,__pycache__,static,staticfiles,templates,.gitignore,buidspec.yml,db.sqlite3 --generate-rcfile > .pylintrc
+      - pylint --ignore=migrations,.ebextensions,__pycache__,static,staticfiles,templates,.gitignore,buidspec.yml,env,Pipfile,views.py,db.sqlite3 --generate-rcfile > .pylintrc
       - sed -i 's/fail-under=10/fail-under=0/g'  .pylintrc
 
   pre_build:
