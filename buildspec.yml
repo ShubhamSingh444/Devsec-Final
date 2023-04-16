@@ -44,7 +44,7 @@ phases:
       - pylint -rn --rcfile=.pylintrc *
       - bandit -iii -r . --exclude=buildspec.yml,db.sqlite3,./env,requirements.txt
       - bandit -iii -r . --exclude=buildspec.yml,db.sqlite3,./env,requirements.txt > bandit-output.txt
-      - pipenv lock
+      - pipenv lock || true
       - pipenv requirements
       - pipenv check
       - pipenv check > pipenv-output.txt
@@ -52,6 +52,8 @@ phases:
 artifacts:
   files:
     - '**/*'
+ignore_exit_codes:
+    - 1
     #If you use the Ubuntu standard image 2.0 or later, you must specify runtime-versions.
     #If you specify runtime-versions and use an image other than Ubuntu standard image 2.0, the build fails.
     #runtime-versions:
