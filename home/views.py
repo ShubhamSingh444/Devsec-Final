@@ -87,7 +87,7 @@ def profile_update(request,id):
             user.userprofile.save()
             user.save()
             return redirect("/profile")
-    return redirect("/home")   
+    return redirect("/home")
 
 def handleSignup(request):
     if request.method =='POST':
@@ -107,20 +107,20 @@ def handleSignup(request):
                 try:
                     user_exists = User.objects.get(username=request.POST['uname'])
                     messages.error(request," Username already taken, Try something else!!!")
-                    return redirect("/register")    
+                    return redirect("/register")
                 except User.DoesNotExist:
                     if len(uname)>15:
                         messages.error(request," Username must be max 15 characters, Please try again")
                         return redirect("/register")
-            
+
                     if not uname.isalnum():
                         messages.error(request," Username should only contain letters and numbers, Please try again")
                         return redirect("/register")
-            
+
                     if pass1 != pass2:
                         messages.error(request," Password do not match, Please try again")
                         return redirect("/register")
-            
+
             # create the user
             user = User.objects.create_user(uname, email, pass1)
             user.first_name=fname
@@ -150,13 +150,13 @@ def handlelogin(request):
         if user is not None:
             dj_login(request, user)
             request.session['is_logged'] = True
-            user = request.user.id 
+            user = request.user.id
             request.session["user_id"] = user
             messages.success(request, " Successfully logged in")
             return redirect('/index')
         else:
-            messages.error(request," Invalid Credentials, Please try again")  
-            return redirect("/")  
+            messages.error(request," Invalid Credentials, Please try again")
+            return redirect("/")
     return HttpResponse('404-not found')
 
 def handleLogout(request):
@@ -207,7 +207,7 @@ def addmoney_update(request,id):
             add.Category = request.POST["Category"]
             add .save()
             return redirect("/index")
-    return redirect("/home") 
+    return redirect("/home")
 
 def expense_edit(request,id):
     """
@@ -240,12 +240,12 @@ def expense_month(request):
 
     def get_Category(addmoney_info):
         # if addmoney_info.add_money=="Expense":
-        return addmoney_info.Category    
+        return addmoney_info.Category
     Category_list = list(set(map(get_Category,addmoney)))
 
     def get_expense_category_amount(Category,add_money):
-        quantity = 0 
-        filtered_by_category = addmoney.filter(Category = Category,add_money="Expense") 
+        quantity = 0
+        filtered_by_category = addmoney.filter(Category = Category,add_money="Expense")
         for item in filtered_by_category:
             quantity+=item.quantity
         return quantity
@@ -272,7 +272,7 @@ def stats(request):
             if i.add_money == 'Expense':
                 sum=sum+i.quantity
         addmoney_info.sum = sum
-        sum1 = 0 
+        sum1 = 0
         for i in addmoney_info:
             if i.add_money == 'Income':
                 sum1 =sum1+i.quantity
@@ -309,7 +309,7 @@ def expense_week(request):
         Calculates the total quantity for a given category in the 'add_money' list.
         """
         quantity = 0
-        filtered_by_category = addmoney.filter(Category = Category,add_money="Expense") 
+        filtered_by_category = addmoney.filter(Category = Category,add_money="Expense")
         for item in filtered_by_category:
             quantity+=item.quantity
         return quantity
@@ -319,7 +319,7 @@ def expense_week(request):
             finalrep[y]= get_expense_category_amount(y,"Expense")
 
     return JsonResponse({'expense_category_data': finalrep}, safe=False)
-   
+
 def weekly(request):
     """
     This view calculates and displays the weekly expenses and income for a logged-in user.
@@ -335,7 +335,7 @@ def weekly(request):
             if i.add_money == 'Expense':
                 sum=sum+i.quantity
         addmoney_info.sum = sum
-        sum1 = 0 
+        sum1 = 0
         for i in addmoney_info:
             if i.add_money == 'Income':
                 sum1 =sum1+i.quantity
@@ -393,4 +393,7 @@ def info_year(request):
     return JsonResponse({'expense_category_data': finalrep}, safe=False)
 
 def info(request):
+    """
+    Render the 'info.html' template for displaying information on the home page.
+    """
     return render(request,'home/info.html')
