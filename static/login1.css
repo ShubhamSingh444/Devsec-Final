@@ -10,7 +10,7 @@ body, html {
   
   .bg-image {
     /* The image used */
-    background-image: url("../static/img/euro.jpg");
+    background-image: url("../static/img/budget.jpeg");
   
     /* Add the blur effect */
     filter: blur(0px);
