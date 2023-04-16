@@ -42,8 +42,8 @@ phases:
   build:
     commands:
       - pylint -rn --rcfile=.pylintrc *
-      - bandit -iii -r . --exclude=buildspec.yml,db.sqlite3,requirements.txt
-      - bandit -iii -r . --exclude=buildspec.yml,db.sqlite3,requirements.txt > bandit-output.txt
+      - bandit -iii -r . --exclude=buildspec.yml,db.sqlite3,./env,requirements.txt
+      - bandit -iii -r . --exclude=buildspec.yml,db.sqlite3,./env,requirements.txt > bandit-output.txt
       - pipenv lock
       - pipenv requirements
       - pipenv check
